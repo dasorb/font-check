@@ -1,10 +1,8 @@
 package com.nebula.font.check;
 
-import com.nebula.font.check.ao.FontConditional;
-import com.nebula.font.check.ao.FontType;
+import com.nebula.font.check.model.FontConditional;
 import com.nebula.font.check.dao.FontDao;
 import com.nebula.font.check.pojo.Font;
-import com.nebula.font.check.service.FontService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

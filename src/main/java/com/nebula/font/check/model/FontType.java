@@ -1,4 +1,5 @@
-package com.nebula.font.check.ao;
+package com.nebula.font.check.model;
+
 
 /***
  * 字体类型枚举类

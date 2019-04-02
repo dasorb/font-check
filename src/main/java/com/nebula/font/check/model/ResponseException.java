@@ -1,6 +1,6 @@
-package com.nebula.font.check.pojo;
+package com.nebula.font.check.model;
 
-/*** 
+/***
  * @author chenjie
  * @date 2019/04/02
  **/

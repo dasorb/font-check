@@ -1,13 +1,12 @@
 package com.nebula.font.check.dao;
 
-import com.nebula.font.check.ao.FontConditional;
-import com.nebula.font.check.ao.Page;
+import com.nebula.font.check.model.FontConditional;
+import com.nebula.font.check.model.po.FontPo;
 import com.nebula.font.check.pojo.Font;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 对fun_font表进行操作
@@ -17,9 +16,9 @@ import java.util.Map;
 @Mapper
 public interface FontDao {
 
-    void insert(Font font);
+    void insert(FontPo fontPo);
 
-    void update(Font font);
+    void update(FontPo fontPo);
 
     /**
      * 根据id进行删除

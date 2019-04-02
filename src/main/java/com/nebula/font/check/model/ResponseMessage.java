@@ -1,6 +1,4 @@
-package com.nebula.font.check.pojo;
-
-import com.nebula.font.check.model.ResponseData;
+package com.nebula.font.check.model;
 
 /***
  * @author chenjie

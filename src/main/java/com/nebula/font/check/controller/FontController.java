@@ -1,8 +1,8 @@
 package com.nebula.font.check.controller;
 
-import com.nebula.font.check.ao.FontConditional;
+import com.nebula.font.check.model.FontConditional;
 import com.nebula.font.check.pojo.Font;
-import com.nebula.font.check.pojo.ResponseException;
+import com.nebula.font.check.model.ResponseException;
 import com.nebula.font.check.service.FontService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -69,8 +69,8 @@ public class FontController {
         return retMap;
     }
 
-    @GetMapping("/font")
-    public Map<String, Object> getFontsByPage(FontConditional fontConditional) {
+    //@GetMapping("/font")
+    /*public Map<String, Object> getFontsByPage(FontConditional fontConditional) {
         List<Font> fonts = fontService.listFont(fontConditional);
         Map<String, Object> retMap = new HashMap<>();
         retMap.put("code", "200");
@@ -78,7 +78,7 @@ public class FontController {
         retMap.put("data", fonts);
 
         return retMap;
-    }
+    }*/
 
     /**
      * 验证非空
