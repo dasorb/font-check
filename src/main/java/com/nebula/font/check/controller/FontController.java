@@ -1,103 +1,98 @@
 package com.nebula.font.check.controller;
 
-import com.nebula.font.check.model.FontConditional;
-import com.nebula.font.check.pojo.Font;
-import com.nebula.font.check.model.ResponseException;
+import com.nebula.font.check.adapter.FontAdapter;
+import com.nebula.font.check.configs.ResponseException;
+import com.nebula.font.check.model.conditions.FontPageSearchItem;
+import com.nebula.font.check.model.data.FontData;
+import com.nebula.font.check.model.protocol.FontRequest;
 import com.nebula.font.check.service.FontService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /***
- * 对字体进行处理
+ * 对字体进行处理的协议
  * @author chenjie
  * @date 2019/04/02
  **/
+@RequestMapping("/font")
 @RestController
 public class FontController {
 
     @Autowired
+    private FontAdapter fontAdapter;
+    @Autowired
     private FontService fontService;
 
-    @PostMapping("/font")
-    public Object create(Font font) throws Exception {
-        validateFont(font);
-        fontService.setFont(font);
-        return font;
-       //return ResponseMessage.success(font);
-//
-//
-//        try {
-//            //非空验证
-//            if (! validateFont(font)) {
-//                throw new IllegalArgumentException("插入的参数中，不能为空");
-//            }
-//            fontService.setFont(font);
-//            return ResponseMessage.success(font);
-//        } catch (IllegalArgumentException e) {
-//            return ResponseMessage.error(e.getMessage())
-//        }
+    @PostMapping(value = {"/save", "/update"})
+    public Object updateOrSave(FontRequest fontRequest) throws ResponseException {
+        // 非空检查
+        fontRequest.check();
+        // 将数据适配为服务层使用数据
+        FontData fontData = fontAdapter.toFontData(fontRequest);
+        //插入数据或修改数据
+        fontService.createOrUpdateFont(fontData);
+        return "success";
     }
 
-    @PutMapping("/font")
-    public Map<String, Object> update(Font font){
-        Map<String, Object> retMap = new HashMap<>();
-        try {
-            fontService.updateFont(font);
-            retMap.put("code", "200");
-            retMap.put("msg", "更新成功");
-            retMap.put("data", font);
-        } catch (IllegalArgumentException e) {
-            retMap.put("code", "xxx");
-            retMap.put("msg", e.getMessage());
-        }
-
-        return retMap;
-    }
-
-    @DeleteMapping("/font/{id}")
-    public Map<String, Object> deleteById(@PathVariable("id") Integer id) {
-        fontService.deleteFontById(1);
-        Map<String, Object> retMap = new HashMap<>();
-        retMap.put("code", "200");
-        retMap.put("msg", "删除成功");
-        retMap.put("data", "");
-
-        return retMap;
-    }
-
-    //@GetMapping("/font")
-    /*public Map<String, Object> getFontsByPage(FontConditional fontConditional) {
-        List<Font> fonts = fontService.listFont(fontConditional);
-        Map<String, Object> retMap = new HashMap<>();
-        retMap.put("code", "200");
-        retMap.put("msg", "查询成功");
-        retMap.put("data", fonts);
-
-        return retMap;
+    /**
+     * 插入保存一条数据
+     *
+     * @param fontRequest 请求接受参数
+     * @return ""
+     * @throws Exception
+     */
+    /*@PostMapping("/save")
+    public Object save(FontRequest fontRequest) throws Exception {
+        // 非空验证
+        fontRequest.check();
+        // 转换数据为service层时用的数据格式
+        FontData fontData = fontAdapter.toFontData(fontRequest);
+        // 插入数据
+        fontService.setFont(fontData);
+        return fontData;
     }*/
 
     /**
-     * 验证非空
-     * @param font
+     *  修改数据
+     *
+     * @param fontRequest 请求传来的参数
      * @return
      */
-    private void validateFont(Font font) throws ResponseException {
-        boolean flag = true;
-        if (font.getCode() == null) {
-            throw new ResponseException("字体编号不能为空");
-        } else if (font.getName() == null) {
-            throw new ResponseException("字体名称不能为空");
-        } else if (font.getCompany() == null) {
-            throw new ResponseException("公司不能为空");
-        } else if (font.getDescription() == null) {
-            throw new ResponseException("字体描述不能为空");
-        } else if (font.getStatus() == null) {
-            throw new ResponseException("字体状态不能为空");
-        }
+    /*@PutMapping("/update")
+    public Object update(FontRequest fontRequest) throws Exception {
+        // 非空验证
+        fontRequest.check();;
+        // 转换为service层使用数据格式
+        FontData fontData = fontAdapter.toFontData(fontRequest);
+        // 修改数据
+        fontService.updateFont(fontData);
+        return fontData;
+    }*/
+
+    /**
+     * 删除数据
+     *
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/delete/{id}")
+    public Object deleteById(@PathVariable("id") int id) throws ResponseException {
+        fontService.deleteFontById(id);
+        return "success";
+    }
+
+    /**
+     * 分页动态条件查询
+     *
+     * @param fontPageSearchItem 分页参数+查询条件
+     * @return
+     */
+    @GetMapping("/search")
+    public Object searchByConditional(FontPageSearchItem fontPageSearchItem) {
+        List<FontData> fontData = fontService.listPageFont(fontPageSearchItem);
+        return fontData;
     }
 
 }

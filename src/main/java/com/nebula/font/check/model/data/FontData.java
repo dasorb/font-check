@@ -15,10 +15,15 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class FontData {
-    private String name; // 字体名称
-    private String code; // 字体编号
-    private String description; // 字体描述
-    private String baseFontCode; // 基础字编号
-    private String company; // 公司
-    private int status; // 字体状态
+    private String name;        // 字体名称
+    private String code;         // 字体编号
+    private String type;          //字体类型
+    private String description;         // 字体描述
+    private String baseFontCode;    // 基础字编号
+    private String company;            // 公司
+    private int status;                       // 字体状态
+    private long time;                         // 更新时间
+
+    private int id;                             // id字段
+
 }

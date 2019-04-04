@@ -1,4 +1,6 @@
-package com.nebula.font.check.model;
+package com.nebula.font.check.configs;
+
+import com.nebula.font.check.configs.constants.Code;
 
 /***
  * @author chenjie

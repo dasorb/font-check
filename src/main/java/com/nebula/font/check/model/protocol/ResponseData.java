@@ -1,4 +1,4 @@
-package com.nebula.font.check.model;
+package com.nebula.font.check.model.protocol;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

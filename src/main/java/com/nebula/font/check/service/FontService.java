@@ -1,13 +1,12 @@
 package com.nebula.font.check.service;
 
 import com.nebula.font.check.adapter.FontAdapter;
-import com.nebula.font.check.model.FontConditional;
-import com.nebula.font.check.model.FontType;
+import com.nebula.font.check.model.conditions.FontPageSearchItem;
+import com.nebula.font.check.model.enums.FontTypeEnum;
 import com.nebula.font.check.dao.FontDao;
-import com.nebula.font.check.model.ResponseException;
+import com.nebula.font.check.configs.ResponseException;
 import com.nebula.font.check.model.data.FontData;
 import com.nebula.font.check.model.po.FontPo;
-import com.nebula.font.check.pojo.Font;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,12 +29,63 @@ public class FontService {
     private FontDao fontDao;
 
     /**
+     * 插入或者修改数据
+     * @param fontData
+     */
+    public void createOrUpdateFont(FontData fontData) throws ResponseException {
+        //校验字体长度是否是12位
+        validateFontCodeLength(fontData);
+        //校验字体是否属于字体类型
+        validateFontCodeFromType(fontData);
+        // 判断字体类型是其他类型还是基础类型,设置basefontcode
+        String fontType = getFontType(fontData);
+        if(fontType.equalsIgnoreCase("B")) {
+            // 基础字体逻辑：将字体编号设置为基础字
+            fontData.setBaseFontCode(fontData.getCode()); //
+        } else {
+            // 其他字体逻辑：校验是否存在基础字，如果存在，字体编号末位转换为B设置基础字
+            validateBaseFontExist(fontType);
+            fontData.setBaseFontCode(fontCodeLastCharToB(fontData));
+        }
+        //设置更新时间，和根据字   体编号设置类型
+        fontData.setType(getFontType(fontData));
+        fontData.setTime(System.currentTimeMillis());
+
+        // 根据ID是否有值判断时添加还是修改，有：修改，无：添加
+        if(fontData.getId() == 0) {
+            //添加
+            //校验字体是否存在于数据库
+            validateFontCodeByCode(fontData);
+            insetFont(fontData);
+        } else {
+            // 修改
+            // 先根据id查询到数据，将入参转换为po实体，进行更新
+            FontPo fontPo = fontDao.loadFontById(fontData.getId());
+            // 将查询到的PO实体，更新为从前台传入的参数
+            fontPo.setType(fontData.getType());
+            fontPo.setBase_font_code(fontData.getBaseFontCode());
+            fontPo.setName(fontData.getName());
+            fontPo.setDescription(fontData.getDescription());
+            fontPo.setStatus(fontData.getStatus());
+            fontPo.setCompany(fontData.getCompany());
+            fontPo.setTime(fontData.getTime());
+            fontPo.setCode(fontData.getCode());
+            //执行更新
+            fontDao.update(fontPo);
+        }
+    }
+
+    /**
      * 插入数据
      * @param fontData 字体数据
      */
+    @Transactional
     public void setFont(FontData fontData) throws ResponseException {
 
-        //判断字体编号长度是否为12
+        // 校验字体是否已经存在数据库
+        // validateFontCodeByCode(fontData);
+
+        //校验字体编号长度是否为12
         validateFontCodeLength(fontData);
 
         //校验字体是否属于字体类型
@@ -44,10 +94,10 @@ public class FontService {
         // 判断字体类型是其他类型还是基础类型
         String fontType = getFontType(fontData);
         if(fontType.equalsIgnoreCase("B")) {
-            // 基础字体逻辑
-            fontData.setBaseFontCode(fontData.getCode());
+            // 基础字体逻辑：将字体编号设置为基础字
+            fontData.setBaseFontCode(fontData.getCode()); //
         } else {
-            // 其他字体逻辑：校验是否存在基础字
+            // 其他字体逻辑：校验是否存在基础字，如果存在，字体编号末位转换为B设置基础字
             validateBaseFontExist(fontType);
             fontData.setBaseFontCode(fontCodeLastCharToB(fontData));
         }
@@ -56,13 +106,81 @@ public class FontService {
     }
 
     /**
-     * 插入字体
+     * 修改数据
+     *
+     * @param fontData 修改数据
+     * @throws ResponseException
+     */
+    @Transactional
+    public void updateFont(FontData fontData) throws ResponseException {
+
+        // 根据字体编号，验证该字体是否存在于数据库
+        // validateFontCodeByCode(fontData);
+
+        //进行更新操作,先根据id查询到数据，对fontType进行赋值，转换为po实体，进行更新
+        FontPo fontPo = fontDao.loadFontById(fontData.getId());
+        fontData.setType(getFontType(fontData));
+        FontPo updateFontPo = fontAdapter.toFontPo(fontData);
+
+        fontPo.setType(updateFontPo.getType());
+        fontPo.setBase_font_code(updateFontPo.getBase_font_code());
+        fontPo.setName(updateFontPo.getName());
+        fontPo.setDescription(updateFontPo.getDescription());
+        fontPo.setStatus(updateFontPo.getStatus());
+        fontPo.setCompany(updateFontPo.getCompany());
+        fontPo.setTime(System.currentTimeMillis());
+        fontPo.setCode(updateFontPo.getCode());
+        //执行更新
+        fontDao.update(fontPo);
+    }
+
+    /**
+     * 根据ID删除数据
+     *
+     * @param id id
+     */
+    public void deleteFontById(int id) throws ResponseException {
+        FontPo fontPo = fontDao.loadFontById(id);
+        if(fontPo == null) {
+            throw  new ResponseException("删除失败，对象在数据库中不存在！");
+        }
+        fontDao.deleteById(id);
+    }
+
+    /**
+     *  根据fontpageSearchItem中的条件进行分页东岱查询
+     * @param fontPageSearchItem 条件
+     * @return
+     */
+    public List<FontData> listPageFont(FontPageSearchItem fontPageSearchItem) {
+        // 设置分页条件，并查询
+        fontPageSearchItem.build(fontDao.loadTotalCountNum());
+        List<FontPo> fonts = fontDao.loadPageByConditional(fontPageSearchItem);
+        // 转换为fontdata数据并返回
+        return fontAdapter.toListFontData(fonts);
+    }
+
+    /**
+     * 转换为表Po实体并插入数据
      */
     private void insetFont(FontData fontData) {
         FontPo fontPo = fontAdapter.toFontPo(fontData);
+        // 设置时间，根据字体编号设置类型
         fontPo.setTime(System.currentTimeMillis());
         fontPo.setType(getFontType(fontData));
+        // 插入数据
         fontDao.insert(fontPo);
+    }
+
+    /**
+     *  校验字体是否存在于数据库中
+     */
+    private void validateFontCodeByCode(FontData fontData) throws ResponseException {
+        //根据字体编码从数据库查询的po实体
+        FontPo fontPo = fontDao.loadFontExistByCode(fontData.getCode());
+        if(fontPo != null) {
+            throw new ResponseException("字体已经存在于数据库中");
+        }
     }
 
     /**
@@ -82,8 +200,8 @@ public class FontService {
         String validateCode = getFontType(fontData);
         boolean flag = false;
         // 遍历枚举类，是否输入枚举类中的任意类型
-        for (FontType fontType : FontType.values()) {
-            String fontTypeString = fontType.toString();
+        for (FontTypeEnum fontTypeEnum : FontTypeEnum.values()) {
+            String fontTypeString = fontTypeEnum.toString();
             if (validateCode.equalsIgnoreCase(fontTypeString)) {
                 flag = true;
             }
@@ -114,7 +232,7 @@ public class FontService {
     }
 
     /**
-     *  字体编号最后一位 to b
+     *  字体编号最后一位转换为B返回字体编号
      */
     private String fontCodeLastCharToB(FontData fontData) {
         char[] chars = fontData.getCode().toCharArray();
@@ -122,40 +240,5 @@ public class FontService {
         return String.valueOf(chars);
     }
 
-    /*public void updateFont(Font font) {
-
-        //判断输入字体编号为12.
-        if(font.getCode().toCharArray().length != 12) {
-            throw new IllegalArgumentException("字体编号必须要要求12位");
-        }
-
-        //校验字体编号最后一位表示字体类型
-        if (! lastCharIsCode(font)) {
-            throw new IllegalArgumentException("字体编号最后一位不属于字体类型");
-        }
-
-        // 校验base基础码存在
-        if (! validateBaseFontExist(font.getBaseFontCode())) {
-            throw new IllegalArgumentException("字体基础字不存在");
-        }
-
-        // 设置更新时间
-        font.setTime(System.currentTimeMillis());
-
-        fontDao.update(font);
-
-    }*/
-
-    public void deleteFontById(Integer id) {
-        fontDao.deleteById(id);
-    }
-
-    public List<FontData> listFont(FontConditional conditions) {
-        // 设置当前页，对应数据库分页索引
-        conditions.setCurrIndex(( conditions.getCurrIndex() - 1 )  * conditions.getPageSize());
-        List<Font> poList = fontDao.loadPageByConditional(conditions);
-
-        return  fontAdapter.toListFontData(poList);
-    }
 
 }

@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * fun_font字体表PO
+ * fun_font字体表对应PO
  * @author chenjie
  * @date 2019/4/2 0002 - 21:33
  */
@@ -16,14 +16,14 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class FontPo {
 
-    private Integer id; // ID
-    private String name; // 字体名称
-    private String code; // 字体编号
-    private String type; // 字体类型
-    private String description; // 字体描述
-    private String baseFontCode; // 基础字编号
-    private String company; // 公司
-    private int status; // 字体状态
-    private Long time; // 更新时间
+    private Integer id;             // ID
+    private String name;        // 字体名称
+    private String code;        // 字体编号
+    private String type;        // 字体类型
+    private String description;             // 字体描述
+    private String base_font_code;      // 基础字编号
+    private String company;                 // 公司
+    private int status;             // 字体状态
+    private Long time;          // 更新时间
 
 }

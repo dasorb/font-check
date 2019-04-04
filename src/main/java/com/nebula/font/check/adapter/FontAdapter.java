@@ -2,7 +2,7 @@ package com.nebula.font.check.adapter;
 
 import com.nebula.font.check.model.data.FontData;
 import com.nebula.font.check.model.po.FontPo;
-import com.nebula.font.check.pojo.Font;
+import com.nebula.font.check.model.protocol.FontRequest;
 import com.nebula.font.check.service.FontService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,20 +20,38 @@ public class FontAdapter {
     @Autowired
     private FontService fontService;
 
-
-    public FontData toFontData(Font fontPo) {
+    /**
+     * 将表PO实体转换为service层使用的data类型
+     *
+     * @param fontPo fun_font Po实体
+     * @return
+     */
+    public FontData toFontData(FontPo fontPo) {
             FontData fontData = new FontData();
-            fontData.setBaseFontCode(fontPo.getBaseFontCode());
+            fontData.setBaseFontCode(fontPo.getBase_font_code());
             fontData.setCode(fontPo.getCode());
             fontData.setCompany(fontPo.getCompany());
             fontData.setDescription(fontPo.getDescription());
             fontData.setStatus(fontPo.getStatus());
             fontData.setName(fontPo.getName());
-
+            fontData.setType(fontPo.getType());
+            fontData.setTime(fontPo.getTime());
+            fontData.setId(fontPo.getId());
             return fontData;
     }
 
-    public List<FontData> toListFontData(List<Font> fontPoList) {
+    public FontData toFontData(FontRequest fontRequest) {
+        FontData fontData = new FontData();
+        fontData.setCode(fontRequest.getCode());
+        fontData.setCompany(fontRequest.getCompany());
+        fontData.setDescription(fontRequest.getDescription());
+        fontData.setStatus(fontRequest.getStatus());
+        fontData.setName(fontRequest.getName());
+        fontData.setId(fontRequest.getId());
+        return fontData;
+    }
+
+    public List<FontData> toListFontData(List<FontPo> fontPoList) {
         return fontPoList.stream().map(this::toFontData).collect(Collectors.toList());
     }
 
@@ -41,13 +59,14 @@ public class FontAdapter {
 
     public FontPo toFontPo(FontData fontData) {
         FontPo fontPo = new FontPo();
-        fontPo.setBaseFontCode(fontData.getBaseFontCode());
+        fontPo.setBase_font_code(fontData.getBaseFontCode());
         fontPo.setCode(fontData.getCode());
         fontPo.setDescription(fontData.getDescription());
         fontPo.setName(fontData.getName());
         fontPo.setCompany(fontData.getCompany());
         fontPo.setStatus(fontData.getStatus());
-
+        fontPo.setType(fontData.getType());
+        fontPo.setTime(fontData.getTime());
         return fontPo;
     }
 

@@ -1,47 +1,51 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.nebula.font.check.dao.FontDao">
 
-    <insert id="insert" parameterType="com.nebula.font.check.pojo.Font" useGeneratedKeys="true">
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.nebula.font.check.model.po.FontPo" useGeneratedKeys="true">
         insert into fun_font(name, code, type, description, base_font_code, company, status, time)
-        values (#{name}, #{code}, #{type}, #{description}, #{baseFontCode}, #{company}, #{status}, #{time})
+        values (#{name}, #{code}, #{type}, #{description}, #{base_font_code}, #{company}, #{status}, #{time})
     </insert>
 
-    <update id="update" parameterType="com.nebula.font.check.pojo.Font">
+    <!-- 更新 -->
+    <update id="update" parameterType="com.nebula.font.check.model.po.FontPo">
         update fun_font
         set
         name = #{name},
         code = #{code},
         type = #{type},
         description = #{description},
-        base_font_code = #{baseFontCode},
+        base_font_code = #{base_font_code},
         company = #{company},
         status = #{status},
         time = #{time}
         where id = #{id}
     </update>
-    
+
+    <!--根据id删除-->
     <delete id="deleteById" parameterType="int">
         delete from fun_font where id=#{id}
     </delete>
 
-    <select id="loadPageByConditional" resultType="com.nebula.font.check.pojo.Font">
+    <!-- 分页动态查询（条件：1.字体类型列表、2.公司列表、3.字体编号列表) -->
+    <select id="loadPageByConditional" resultType="com.nebula.font.check.model.po.FontPo">
         select * from fun_font
         <where>
-            <if test='conditions.fontTypeConditionalList != null'>
+            <if test='conditions.fontTypes != null'>
                 and type in
-                <foreach collection="conditions.fontTypeConditionalList" item="item" index="index" open="(" close=")" separator=",">
+                <foreach collection="conditions.fontTypes" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
-            <if test='conditions.companyConditionalList != null'>
+            <if test='conditions.companies != null'>
                 and type in
-                <foreach collection="conditions.companyConditionalList" item="item" index="index" open="(" close=")" separator=",">
+                <foreach collection="conditions.companies" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
-            <if test='conditions.codeConditionalList != null'>
+            <if test='conditions.codes != null'>
                 and type in
-                <foreach collection="conditions.codeConditionalList" item="item" index="index" open="(" close=")" separator=",">
+                <foreach collection="conditions.codes" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
@@ -51,12 +55,18 @@
         </if>
     </select>
 
-    <select id="loadFontById" resultType="com.nebula.font.check.pojo.Font" >
+    <!--根据ID进行查询，测试使用-->
+    <select id="loadFontById" resultType="com.nebula.font.check.model.po.FontPo" >
         select * from fun_font where id = #{id}
     </select>
     
-    <select id="loadFontExistByCode" resultType="com.nebula.font.check.pojo.Font">
+    <select id="loadFontExistByCode" resultType="com.nebula.font.check.model.po.FontPo">
         select * from fun_font where code = #{code}
+    </select>
+
+    <!-- 查询总数量 -->
+    <select id="loadTotalCountNum" resultType="int">
+        select count(*) from fun_font
     </select>
 
 
